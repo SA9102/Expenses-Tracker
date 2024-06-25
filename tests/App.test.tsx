@@ -6,6 +6,22 @@ import { describe, expect, it, test } from "vitest";
 import App from "../src/App";
 import EntryType from "../types/entryType";
 
+const getCategoryCombobox = () => {
+  return screen.getByRole("combobox", { name: /category/i });
+};
+
+const getNewCategoryComponents = () => {
+  const categoryTBox = screen.queryByRole("textbox", { name: /new category/i });
+  const categoryConfirmBtn = screen.queryByRole("button", { name: /add category/i });
+  const categoryCancelBtn = screen.queryByRole("button", { name: /cancel/i });
+
+  return { categoryTBox, categoryConfirmBtn, categoryCancelBtn };
+};
+
+const getNewCategoryButton = () => {
+  return screen.getByRole("button", { name: /new category/i });
+};
+
 describe("App.tsx", () => {
   it("should display a header saying 'Expenses Tracker'", () => {
     render(<App />);
@@ -25,10 +41,68 @@ describe("App.tsx", () => {
     expect(priceInput).toBeInTheDocument();
   });
 
+  it("should display a combobox to select the category of the item", () => {
+    render(<App />);
+    const categoryInput = screen.getByRole("combobox", { name: "Category" });
+    expect(categoryInput).toBeInTheDocument();
+  });
+
   it("should display a combobox to select the currency", () => {
     render(<App />);
     const currencyInput = screen.getByRole("combobox", { name: "Currency" });
     expect(currencyInput).toBeInTheDocument();
+  });
+
+  it("should display a 'New Category' button to allow the user to create a new category", () => {
+    render(<App />);
+    const newCategoryButton = screen.getByRole("button", { name: /new category/i });
+    expect(newCategoryButton).toBeInTheDocument();
+  });
+
+  test("when 'New Category' is clicked, it should show an input field where the user can enter the name of the new category, and a button to confirm", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    let newCategoryButton = getNewCategoryButton();
+
+    await user.click(newCategoryButton);
+
+    const { categoryTBox, categoryConfirmBtn, categoryCancelBtn } = getNewCategoryComponents();
+
+    expect(categoryTBox).toBeInTheDocument();
+    expect(categoryConfirmBtn).toBeInTheDocument();
+    expect(categoryCancelBtn).toBeInTheDocument();
+    // expect(newCategoryButton).not.toBeInTheDocument();
+  });
+
+  test("when creating a new category, it should now appear in the 'Category' combobox", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const testOption = "foo";
+    // const newCategoryButton = screen.getByRole()
+    const categoryCombobox = getCategoryCombobox();
+
+    // There should initially be no option called 'foo' in the Category combobox.
+    let option = screen.queryByRole("option", { name: testOption });
+
+    expect(option).not.toBeInTheDocument();
+
+    // Creating a category called 'foo'
+
+    const newCategoryButton = getNewCategoryButton();
+
+    await user.click(newCategoryButton);
+
+    const { categoryTBox, categoryConfirmBtn, categoryCancelBtn } = getNewCategoryComponents();
+
+    await user.type(categoryTBox, "foo");
+    await user.click(categoryConfirmBtn);
+
+    // Checking if the category 'foo' is now an option
+
+    option = screen.getByRole("option", { name: testOption });
+    expect(option).toBeInTheDocument();
   });
 
   test("when 'Add' is clicked, it should add an entry which shows the details of the item", async () => {
@@ -50,7 +124,7 @@ describe("App.tsx", () => {
     await user.type(nameInput, testProps.name);
     await user.type(priceInput, "" + testProps.price);
 
-    const addButton = screen.getByRole("button", { name: "Add" });
+    const addButton = screen.getByRole("button", { name: /add/i });
     await user.click(addButton);
 
     nameHeading = screen.getByRole("heading", { name: testProps.name });
