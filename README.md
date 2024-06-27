@@ -39,6 +39,11 @@ I would also like to learn how to use some AWS services, such as DynamoDB for st
 
 ## Update Log
 
+## 25th June 2024
+
+- Can create new categories
+
 ### 24th June 2024
 
 - First push to GitHub
+- Can add entries

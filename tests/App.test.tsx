@@ -1,7 +1,7 @@
 import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, test } from "vitest";
+import { describe, expect, it, test, vi } from "vitest";
 
 import App from "../src/App";
 import EntryType from "../types/entryType";
@@ -11,15 +11,26 @@ const getCategoryCombobox = () => {
 };
 
 const getNewCategoryComponents = () => {
-  const categoryTBox = screen.queryByRole("textbox", { name: /new category/i });
-  const categoryConfirmBtn = screen.queryByRole("button", { name: /add category/i });
-  const categoryCancelBtn = screen.queryByRole("button", { name: /cancel/i });
+  const categoryTBox = screen.getByRole("textbox", { name: /new category/i });
+  const categoryConfirmBtn = screen.getByRole("button", { name: /add category/i });
+  const categoryCancelBtn = screen.getByRole("button", { name: /cancel/i });
 
   return { categoryTBox, categoryConfirmBtn, categoryCancelBtn };
 };
 
 const getNewCategoryButton = () => {
   return screen.getByRole("button", { name: /new category/i });
+};
+
+const addEntry = async () => {
+  const user = userEvent.setup();
+  const itemInput = screen.getByRole("textbox", { name: /item/i });
+  const priceInput = screen.getByRole("spinbutton", { name: /price/i });
+  const addEntryBtn = screen.getByRole("button", { name: /add/i });
+
+  await user.type(itemInput, "foo");
+  await user.type(priceInput, "20");
+  await user.click(addEntryBtn);
 };
 
 describe("App.tsx", () => {
@@ -59,7 +70,7 @@ describe("App.tsx", () => {
     expect(newCategoryButton).toBeInTheDocument();
   });
 
-  test("when 'New Category' is clicked, it should show an input field where the user can enter the name of the new category, and a button to confirm", async () => {
+  test("if 'New Category' is clicked, it should show an input field where the user can enter the name of the new category, and a button to confirm", async () => {
     const user = userEvent.setup();
     render(<App />);
 
@@ -80,8 +91,6 @@ describe("App.tsx", () => {
     render(<App />);
 
     const testOption = "foo";
-    // const newCategoryButton = screen.getByRole()
-    const categoryCombobox = getCategoryCombobox();
 
     // There should initially be no option called 'foo' in the Category combobox.
     let option = screen.queryByRole("option", { name: testOption });
@@ -99,19 +108,44 @@ describe("App.tsx", () => {
     await user.type(categoryTBox, "foo");
     await user.click(categoryConfirmBtn);
 
-    // Checking if the category 'foo' is now an option
-
     option = screen.getByRole("option", { name: testOption });
     expect(option).toBeInTheDocument();
+  });
+
+  // TODO
+  test("if 'Cancel' is pressed when creating a new category, it should no longer show the input for creating a category, and nothing should be added to the list of categories", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const newCategoryButton = getNewCategoryButton();
+
+    await user.click(newCategoryButton);
+
+    let { categoryTBox, categoryConfirmBtn, categoryCancelBtn } = getNewCategoryComponents();
+
+    const testOption = "foo";
+
+    await user.type(categoryTBox, testOption);
+    await user.click(categoryCancelBtn);
+
+    const testCategoryTBox = screen.queryByRole("textbox", { name: /new category/i });
+    const testCategoryConfirmBtn = screen.queryByRole("button", { name: /add category/i });
+    const testCategoryCancelBtn = screen.queryByRole("button", { name: /cancel/i });
+
+    const option = screen.queryByRole("option", { name: testOption });
+
+    expect(option).not.toBeInTheDocument();
+    expect(testCategoryTBox).not.toBeInTheDocument();
+    expect(testCategoryConfirmBtn).not.toBeInTheDocument();
+    expect(testCategoryCancelBtn).not.toBeInTheDocument();
   });
 
   test("when 'Add' is clicked, it should add an entry which shows the details of the item", async () => {
     const user = userEvent.setup();
     render(<App />);
-    const testProps: EntryType = { name: "foo", price: 20, category: "bar" };
+    const testProps: EntryType = { name: "foo", price: 20, category: "bar", currency: "£" };
 
     let nameHeading = screen.queryByRole("heading", { name: testProps.name });
-    let priceHeading = screen.queryByRole("heading", { name: "" + testProps.price });
+    let priceHeading = screen.queryByRole("heading", { name: "£" + testProps.price });
     // let categoryHeading = screen.queryByRole("heading", { name: testProps.category });
 
     expect(nameHeading).not.toBeInTheDocument();
@@ -122,14 +156,38 @@ describe("App.tsx", () => {
     const priceInput = screen.getByRole("spinbutton", { name: "Price" });
     // const productInput = screen.getByRole("textbox", { name: "Item" });
     await user.type(nameInput, testProps.name);
-    await user.type(priceInput, "" + testProps.price);
+    await user.type(priceInput, "£" + testProps.price);
 
     const addButton = screen.getByRole("button", { name: /add/i });
     await user.click(addButton);
 
     nameHeading = screen.getByRole("heading", { name: testProps.name });
-    priceHeading = screen.getByRole("heading", { name: "" + testProps.price });
+    priceHeading = screen.getByRole("heading", { name: "£" + testProps.price });
     expect(nameHeading).toBeInTheDocument();
     expect(priceHeading).toBeInTheDocument();
+  });
+
+  test("inital currency should be in pounds (£)", () => {
+    render(<App />);
+    const initialCurrency = "£";
+    const currencyCBox = screen.getByRole("combobox", { name: /currency/i });
+    expect(currencyCBox.value).toBe(initialCurrency);
+  });
+
+  it("should render the correct currency when an entry is added", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    // Selecting a currency
+    // await user.selectOptions(screen.getByRole("combobox", { name: /currency/i }), ["$"]);
+
+    await addEntry();
+    let priceText = screen.getByRole("heading", { name: "£20" });
+    expect(priceText).toBeInTheDocument();
+
+    await user.selectOptions(screen.getByRole("combobox", { name: /currency/i }), ["$"]);
+
+    priceText = screen.getByRole("heading", { name: "$20" });
+    expect(priceText).toBeInTheDocument();
   });
 });
