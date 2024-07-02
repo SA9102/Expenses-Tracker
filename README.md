@@ -20,6 +20,14 @@ In a world where it is easy to spend a lot of money, especially with the higher 
 
 Even though there are plenty of expense-tracker apps out there, some of them come with features that I do not need, such as keeping track of how much money you are transferring to other people (which I never really do), as well as advertisements. I wanted something simple, yet something that is very easy to use.
 
+## Features
+
+These are some of the features I will include:
+
+- Create, view, update and delete 'expense entries'
+- Filter 'expense entries' by name, price and category
+- View expenses for a specific month
+
 ## :desktop_computer: Tech Stack
 
 - **React**, for the front-end
@@ -39,7 +47,17 @@ I would also like to learn how to use some AWS services, such as DynamoDB for st
 
 ## Update Log
 
-## 25th June 2024
+### 30th June 2024
+
+- Edit entries
+- Delete entries
+
+### 27th June 2024
+
+- Can cancel the creation of a category
+- Renders correct currency
+
+### 25th June 2024
 
 - Can create new categories
 

@@ -1,6 +1,11 @@
-import EntryType from "../../types/entryType";
+type Props = {
+  name: string;
+  price: number;
+  category: string;
+  currency: string;
+};
 
-const Entry = ({ name, price, category, currency }: EntryType) => {
+const Entry = ({ name, price, category, currency }: Props) => {
   return (
     <div className="entry-container">
       <h2>{name}</h2>

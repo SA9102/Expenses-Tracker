@@ -190,4 +190,18 @@ describe("App.tsx", () => {
     priceText = screen.getByRole("heading", { name: "$20" });
     expect(priceText).toBeInTheDocument();
   });
+
+  // test("item name cannot be empty", async () => {
+  //   const user = userEvent.setup();
+  //   render(<App />);
+
+  //   const priceInput = screen.getByRole("spinbutton", { name: /price/i });
+  //   await user.type(priceInput, "20");
+
+  //   const addBtn = screen.getByRole("button", { name: "Add" });
+
+  //   const priceHeading = screen.queryByRole("heading", { name: "£20" });
+
+  //   expect(priceHeading).toBeInTheDocument();
+  // });
 });

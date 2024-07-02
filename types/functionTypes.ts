@@ -1,3 +1,5 @@
 type AddEntryType = () => void;
 
-export type { AddEntryType };
+type DeleteEntryType = (id: string) => void;
+
+export type { AddEntryType, DeleteEntryType };
