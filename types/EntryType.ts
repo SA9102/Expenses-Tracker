@@ -1,6 +1,6 @@
 type EntryType = {
   id: string;
-  name: string;
+  item: string;
   price: number;
   category: string;
   currency: string;

@@ -22,14 +22,14 @@ const getNewCategoryButton = () => {
   return screen.getByRole("button", { name: /new category/i });
 };
 
-const addEntry = async () => {
+const addEntry = async (item: string, price: string) => {
   const user = userEvent.setup();
   const itemInput = screen.getByRole("textbox", { name: /item/i });
   const priceInput = screen.getByRole("spinbutton", { name: /price/i });
   const addEntryBtn = screen.getByRole("button", { name: /add/i });
 
-  await user.type(itemInput, "foo");
-  await user.type(priceInput, "20");
+  await user.type(itemInput, item);
+  await user.type(priceInput, price);
   await user.click(addEntryBtn);
 };
 
@@ -204,4 +204,33 @@ describe("App.tsx", () => {
 
   //   expect(priceHeading).toBeInTheDocument();
   // });
+
+  test("should be able to delete an entry", async () => {
+    render(<App />);
+
+    const testItem = "foo";
+    const testPrice = "20";
+
+    // const user = userEvent.setup();
+
+    // addEntry(testItem, testPrice);
+
+    const user = userEvent.setup();
+    const itemInput = screen.getByRole("textbox", { name: /item/i });
+    const priceInput = screen.getByRole("spinbutton", { name: /price/i });
+    const addEntryBtn = screen.getByRole("button", { name: /add/i });
+
+    await user.type(itemInput, testItem);
+    await user.type(priceInput, testPrice);
+    await user.click(addEntryBtn);
+
+    let itemHeading = screen.getByRole("heading", { name: testItem });
+    let priceHeading = screen.getByRole("heading", { name: "£" + testPrice });
+
+    expect(itemHeading).toBeInTheDocument();
+    expect(priceHeading).toBeInTheDocument();
+
+    // const deleteBtn = screen.getByRole("button", {name: /delete/i})
+    // await user.click(deleteBtn)
+  });
 });

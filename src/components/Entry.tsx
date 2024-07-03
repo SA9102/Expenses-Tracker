@@ -1,14 +1,14 @@
 type Props = {
-  name: string;
+  item: string;
   price: number;
   category: string;
   currency: string;
 };
 
-const Entry = ({ name, price, category, currency }: Props) => {
+const Entry = ({ item, price, category, currency }: Props) => {
   return (
     <div className="entry-container">
-      <h2>{name}</h2>
+      <h2>{item}</h2>
       <h3>
         {currency}
         {price}

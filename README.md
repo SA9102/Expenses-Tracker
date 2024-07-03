@@ -47,7 +47,12 @@ I would also like to learn how to use some AWS services, such as DynamoDB for st
 
 ## Update Log
 
-### 30th June 2024
+### 3rd June 2024
+
+- Filter items by name
+- Filter items by price - less than, greater than, equal to, or range
+
+### 2nd June 2024
 
 - Edit entries
 - Delete entries
