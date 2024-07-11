@@ -3,8 +3,8 @@ type EntryType = {
   item: string;
   price: number;
   category: string;
-  currency: string;
   isEditing: boolean;
+  purchaseDate: string;
 };
 
 export default EntryType;

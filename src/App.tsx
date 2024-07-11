@@ -15,8 +15,8 @@ const App = () => {
     item: "",
     price: 0,
     category: "Food",
-    currency: "£",
     isEditing: false,
+    purchaseDate: "",
   });
   const [categories, setCategories] = useState<string[]>(initialCategories);
   const [isNewCategory, setIsNewCategory] = useState<boolean>(false); // True if the user wants to create a new category
@@ -31,6 +31,15 @@ const App = () => {
   const [priceComparison, setPriceComparison] = useState<"equal-to" | "less-than" | "greater-than" | "range">("equal-to");
   const [priceFilterMin, setPriceFilterMin] = useState("0"); // The minimum value when filtering entries by price range
   const [priceFilterMax, setPriceFilterMax] = useState("0"); // The maximum value when filtering entries by price range
+
+  const [dateFilter, setDateFilter] = useState("");
+
+  console.log(dateFilter);
+
+  // Get date, month and year from a Date object
+  const getDMYFromDate = (date: Date) => {
+    return date.toLocaleDateString("default", { day: "numeric", month: "long", year: "numeric" });
+  };
 
   // We only want the items to be filtered if 'entries', 'itemFilter' and/or 'priceFilter' change, so that the filtering doesn't occur on
   // every single render (which could potentially slow the application down). Hence we use useMemo here.
@@ -53,8 +62,22 @@ const App = () => {
     } else if (priceComparison === "range") {
       a = a.filter((entry: EntryType) => entry.price >= +priceFilterMin && entry.price <= +priceFilterMax);
     }
+    if (dateFilter !== "") {
+      a = a.filter((entry: EntryType) => {
+        const entryMillis = entry.purchaseDate?.getTime();
+        const dateFilterMillis = Date.parse(dateFilter);
+
+        console.log("1");
+        console.log(entry.purchaseDate);
+        console.log(entryMillis);
+        console.log(dateFilterMillis);
+
+        return entryMillis <= dateFilterMillis + 86400;
+      });
+    }
+
     return a;
-  }, [entries, itemFilter, priceFilter, priceComparison, priceFilterMin, priceFilterMax]);
+  }, [entries, itemFilter, priceFilter, priceComparison, priceFilterMin, priceFilterMax, dateFilter]);
 
   // entriesDisplay = useMemo(() => {
   //   if (+priceFilter > 0) {
@@ -71,18 +94,32 @@ const App = () => {
   //   return [...entries];
   // }, [entries, priceFilter]);
 
+  const isCorrectPriceFormat = () => {
+    const priceStr = "" + entryInput.price;
+    if (priceStr.includes(".")) {
+      const split = priceStr.split(".");
+      if (split[1].length > 2) {
+        return false;
+      }
+    }
+    return true;
+  };
+
   // When a new entry is created, it adds it to the list of 'entries', and also resets the inputs (but keeps 'selectedCurrency' the same).
   //
   const handleAddEntry: AddEntryType = () => {
-    setEntries([...entries, entryInput]);
-    setEntryInput({
-      id: uuidv4(),
-      item: "",
-      price: 0,
-      category: entryInput.category,
-      currency: selectedCurrency,
-      isEditing: false,
-    });
+    if (isCorrectPriceFormat()) {
+      const entryInputToBeAdded = { ...entryInput, purchaseDate: new Date() };
+      setEntries([...entries, entryInputToBeAdded]);
+      setEntryInput({
+        id: uuidv4(),
+        item: "",
+        price: 0,
+        category: entryInput.category,
+        isEditing: false,
+        purchaseDate: "",
+      });
+    }
   };
 
   // When a new category is created, it adds it to the list of 'categories', and resets the input
@@ -128,6 +165,7 @@ const App = () => {
     setPriceComparison("equal-to");
     setPriceFilterMin("0");
     setPriceFilterMax("0");
+    setDateFilter("");
   };
 
   // Get an entry from the 'entries' array according to the given id
@@ -177,6 +215,7 @@ const App = () => {
           type="number"
           name="price"
           id="price"
+          min={0}
           value={entryInput.price}
           onChange={(e) => setEntryInput({ ...entryInput, price: +e.target.value })}
         />
@@ -193,6 +232,11 @@ const App = () => {
             <option value={category}>{category}</option>
           ))}
         </select>
+      </div>
+      <div className="input-container">
+        <label htmlFor="category">Date purchased</label>
+        <input type="date" value={entryInput.purchaseDate} onChange={(e) => setEntryInput(e.target.value)} />
+        <input type="date" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} />
       </div>
 
       {isNewCategory ? (
@@ -324,6 +368,9 @@ const App = () => {
             disabled={priceComparison !== "range"}
           />
         </div>
+        <div className="input-container">
+          <input type="date" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} />
+        </div>
         <button onClick={handleClearAllFilters}>Clear all filters</button>
       </div>
 
@@ -342,6 +389,7 @@ const App = () => {
                 type="number"
                 name="price"
                 id="price"
+                // min={0}
                 value={entry.price}
                 onChange={(e) => handleUpdateEntry(entry.id, "price", e.target.value)}
               />
@@ -358,7 +406,14 @@ const App = () => {
           </div>
         ) : (
           <>
-            <Entry key={entry.id} item={entry.item} price={entry.price} category={entry.category} currency={selectedCurrency} />
+            <Entry
+              key={entry.id}
+              item={entry.item}
+              price={entry.price}
+              category={entry.category}
+              currency={selectedCurrency}
+              purchaseDate={entry.purchaseDate!.toLocaleString("default", { day: "numeric", month: "long", year: "numeric" })}
+            />
             <button onClick={() => handleToggleEditEntry(entry.id)}>Edit</button>
             <button onClick={() => handleDeleteEntry(entry.id)}>Delete</button>
           </>

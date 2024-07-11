@@ -47,12 +47,17 @@ I would also like to learn how to use some AWS services, such as DynamoDB for st
 
 ## Update Log
 
-### 3rd June 2024
+### 10th July 2024
+
+- Price is now in the correct format - adds a '0' as the second decimal if only one digit after the decimal point is provided (e.g. entering 20.1 would produce 20.10)
+- If a number is entered, for the price, that is in an invalid format (e.g. negative or has more than two digits after the decimal point), this is rejected
+
+### 3rd July 2024
 
 - Filter items by name
 - Filter items by price - less than, greater than, equal to, or range
 
-### 2nd June 2024
+### 2nd July 2024
 
 - Edit entries
 - Delete entries
